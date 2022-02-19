@@ -1,0 +1,4 @@
+api/gateway/node_modules
+api/jobs-service/node_modules
+api/users-service/node_modules
+app/node_modules
