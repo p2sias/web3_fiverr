@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { createJob, findJob, findAndUpdateJob, getJobs, deleteJob } from "../service/job.service";
-import { getPictures } from "../service/picture.service";
+import { getPictures, deletePicture } from "../service/picture.service";
 import log from "../logger";
 import { get } from "lodash";
 
@@ -88,6 +88,10 @@ export async function deleteJobHandler(req: Request, res: Response) {
 
   if (!job) {
     return res.sendStatus(404);
+  }
+
+  for (const photo of job.photos) {
+    await deletePicture({ _id: photo });
   }
 
   await deleteJob({ _id: params.job_id });

@@ -1,12 +1,19 @@
 import { Request, Response } from "express";
 import { createUser, findUser, findAndUpdateUser, getUsers, deleteUser } from "../service/user.service";
+import {findAvatar, deleteAvatar } from "../service/avatar.service";
+import { generateToken } from "../service/session.service";
 import log from "../logger";
 import { get } from "lodash";
 
 export async function createUserHandler(req: Request, res: Response) {
   try {
-    const user = await createUser(req.body);
-    return res.send(user.toJSON());
+    let user = await createUser(req.body);
+    let token = await generateToken(user)
+    user = await findAndUpdateUser({ _id: user._id }, { jwt_token: token }, { new: true }) as any;
+    
+    if (user) {
+      return res.send(user.toJSON());
+    }
   } catch (e: any) {
     log.error(e);
     return res.status(409).send(e.message);
@@ -53,6 +60,15 @@ export async function deleteUserHandler(req: Request, res: Response) {
 
   if (!user) {
     return res.sendStatus(404);
+  }
+
+  if (user.avatar)
+  {
+    let avatar = await findAvatar({ _id: user.avatar })
+    
+    if (avatar) {
+      await deleteAvatar(avatar)
+    }
   }
 
   await deleteUser({ _id: params.user_id });

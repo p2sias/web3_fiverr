@@ -29,6 +29,25 @@ export async function createPictureHandler(req: Request, res: Response) {
   }
 }
 
+export async function getPicturesHandler(req: Request, res: Response) {
+  try {
+
+    let query = {};
+    const { params } = req;
+
+    if (params && params.picture_id) query = { _id: params.picture_id };
+
+    const pictures = await getPictures(query);
+
+    if (pictures) {
+      return res.send(pictures);
+    }
+  } catch (e: any) {
+    log.error(e);
+    return res.status(409).send(e.message);
+  }
+}
+
 export async function deletePictureHandler(req: Request, res: Response) {
   const { params } = req;
 

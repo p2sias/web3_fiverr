@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import axios from 'axios';
 import log from "../logger";
 
-import { usersApiUrl } from '../config'
+import { usersApiUrl, jobsApiUrl } from '../config'
 
 export async function createUserHandler(req: Request, res: Response) {
   await axios.post(usersApiUrl, req.body)
@@ -50,14 +50,38 @@ export async function deleteUserHandler(req: Request, res: Response) {
 
   if (!params.user_id) return res.sendStatus(400);
 
-   await axios.delete(`${usersApiUrl}/${params.user_id}`)
-     .then(() => {
-       log.info(`Succefully deleted user(${params.user_id})`)
-       res.status(200)
-     })
+  await axios.get(usersApiUrl + '/' + params.user_id)
+    .then(async (response: any) => {
+      
+      let user = response.data[0];
+      for (const job of user.jobs) {
+        
+        await axios.delete(`${jobsApiUrl}/${job}`)
+          .then(() => {
+            log.info(`Succefully deleted job(${job})`)
+            res.status(200)
+          })
+          .catch((err: any) => {
+            log.error(`Failed to delete job(${job})`)
+            console.log(err);
+            res.status(500).send(err)
+          })
+      }
+
+    })
+    .catch((err: any) => {
+      log.error(`Failed to get users`)
+      console.log(err);
+    })
+
+  await axios.delete(`${usersApiUrl}/${params.user_id}`)
+    .then(() => {
+      log.info(`Succefully deleted user(${params.user_id})`)
+      res.status(200).send();
+    })
     .catch((err: any) => {
       log.error(`Failed to delete user(${params.user_id})`)
       console.log(err);
-      res.status(500)
-    })
+      res.status(500).send()
+    });
 }

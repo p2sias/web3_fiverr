@@ -10,7 +10,7 @@ npm install
 npm run serve
 ```
 
-### Compiles and minifies for jobion
+### Compiles and minifies for production
 ```
 npm run build
 ```

@@ -2,7 +2,7 @@ import { Express, Request, Response } from "express";
 
 import { createCategoryHandler, getJobsByCategoryHandler, getCategoriesHandler, deleteCategoryHandler, updateCategoryHandler } from "./controller/category.controller";
 import { createJobHandler, getJobsHandler, getJobsByUserHandler, getPictureByJobHandler, deleteJobHandler, updateJobHandler } from "./controller/job.controller";
-import { createPictureHandler, deletePictureHandler,  } from "./controller/picture.controller";
+import { createPictureHandler, deletePictureHandler, getPicturesHandler  } from "./controller/picture.controller";
 
 export default function (app: Express) {  
 
@@ -17,6 +17,8 @@ export default function (app: Express) {
 
     app.post("/api/pictures", createPictureHandler);
     app.delete("/api/pictures/:picture_id", deletePictureHandler);
+    app.get("/api/pictures", getPicturesHandler);
+    app.get("/api/pictures/:picture_id", getPicturesHandler);
 
 
     app.post("/api/categories", createCategoryHandler);

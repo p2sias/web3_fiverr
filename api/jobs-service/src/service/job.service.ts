@@ -1,5 +1,5 @@
 import { DocumentDefinition, FilterQuery, UpdateQuery, QueryOptions } from "mongoose";
-import Job, { JobDocument } from "../model/job.model";
+import Job, { JobDocument } from "../models/job.model";
 
 export async function createJob(input: DocumentDefinition<JobDocument>) {
   try {

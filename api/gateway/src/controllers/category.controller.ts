@@ -44,7 +44,7 @@ export async function updateCategoryHandler(req: Request, res: Response) {
     })
 }
 
-export async function getCategorysHandler(req: Request, res: Response) {
+export async function getCategoriesHandler(req: Request, res: Response) {
   const { params } = req;
   let query_id = ""
   if (params && params.category_id) query_id = `/${params.category_id}`

@@ -76,16 +76,51 @@ export async function deleteJobHandler(req: Request, res: Response) {
 
   if (!params.job_id) return res.sendStatus(400);
 
-   await axios.delete(`${jobsApiUrl}/${params.job_id}`)
-     .then(() => {
-       log.info(`Succefully deleted job(${params.job_id})`)
-       res.status(200)
-     })
+  await axios.get(jobsApiUrl + "/" + params.job_id)
+    .then(async (response: any) => {
+
+      let userId = response.data[0].user;
+
+      await axios.get(`${usersApiUrl}/${userId}`)
+        .then(async (response: any) => {
+        
+          const user = response.data[0];
+
+          user.jobs.splice(user.jobs.indexOf(params.job_id), 1);
+
+          
+        await axios.put(`${usersApiUrl}/${user._id}`, {jobs: user.jobs})
+          .then((response: any) => {
+            log.info(`Succefully updated user(${user._id})`)
+          })
+          .catch((err: any) => {
+            log.error(`Failed to update user(${user._id})`)
+            console.log(err);
+          })
+
+      })
+      .catch((err: any) => {
+        log.error(`Failed to get users`)
+        console.log(err);
+      })
+    })
+    .catch((err: any) => {
+      log.error(`Failed to get jobs`)
+      console.log(err);
+      res.status(500).send(err)
+        
+    });
+  
+  await axios.delete(`${jobsApiUrl}/${params.job_id}`)
+    .then(() => {
+      log.info(`Succefully deleted job(${params.job_id})`)
+      res.status(200).send()
+    })
     .catch((err: any) => {
       log.error(`Failed to delete job(${params.job_id})`)
       console.log(err);
       res.status(500).send(err)
-    })
+    });
 }
 
 export async function getJobsByUserHandler(req: Request, res: Response) {

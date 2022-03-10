@@ -2,8 +2,8 @@ import { object, string} from "yup";
 
 export const createPictureSchema = object({
   body: object({
-    image: string().required("Image buffer is required !"),
-    job: string().required("Job is required")
+    avatar: string().required("Image buffer is required !"),
+    user: string().required("Job is required")
   }),
 });
 

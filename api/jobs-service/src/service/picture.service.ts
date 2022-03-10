@@ -1,5 +1,5 @@
 import { DocumentDefinition, FilterQuery, UpdateQuery, QueryOptions } from "mongoose";
-import Picture, { PictureDocument } from "../model/picture.model";
+import Picture, { PictureDocument } from "../models/picture.model";
 
 export async function createPicture(input: DocumentDefinition<PictureDocument>) {
   try {

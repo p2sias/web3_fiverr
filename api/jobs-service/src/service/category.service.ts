@@ -1,5 +1,5 @@
 import { DocumentDefinition, FilterQuery, UpdateQuery, QueryOptions } from "mongoose";
-import Category, { CategoryDocument } from "../model/category.model";
+import Category, { CategoryDocument } from "../models/category.model";
 
 export async function createCategory(input: DocumentDefinition<CategoryDocument>) {
   try {
