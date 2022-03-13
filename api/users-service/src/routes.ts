@@ -8,6 +8,7 @@ export default function (app: Express) {
     app.get("/api/users/:user_id", getUsersHandler);
     app.put("/api/users/:user_id", updateUserHandler);
     app.delete("/api/users/:user_id", deleteUserHandler);
+    app.get("/api/users/wallet/:wallet_id", getUsersHandler);
 
     app.post("/api/avatars", createAvatarHandler);
     app.delete("/api/avatars/:avatar_id", deleteAvatarHandler);

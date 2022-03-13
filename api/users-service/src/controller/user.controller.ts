@@ -1,15 +1,30 @@
 import { Request, Response } from "express";
 import { createUser, findUser, findAndUpdateUser, getUsers, deleteUser } from "../service/user.service";
-import {findAvatar, deleteAvatar } from "../service/avatar.service";
+import {findAvatar, deleteAvatar, createAvatar } from "../service/avatar.service";
 import { generateToken } from "../service/session.service";
 import log from "../logger";
-import { get } from "lodash";
+import { AvatarDocument } from "../models/avatar.model";
+
+
+
 
 export async function createUserHandler(req: Request, res: Response) {
   try {
     let user = await createUser(req.body);
     let token = await generateToken(user)
-    user = await findAndUpdateUser({ _id: user._id }, { jwt_token: token }, { new: true }) as any;
+
+    
+    const identicon = require('identicon')
+    const buffer: Buffer = identicon.generateSync({ id: user.polygon_address, size: 200 })
+    
+    let avatar = await createAvatar({
+      avatar: buffer,
+      user: user._id
+    })
+
+    avatar ? log.info(`New avatar created for user(${user._id})`) : log.error(`Error while creating avatar for user(${user._id})`)
+    
+    user = await findAndUpdateUser({ _id: user._id }, { jwt_token: token, avatar: avatar._id }, { new: true }) as any;
     
     if (user) {
       return res.send(user.toJSON());
@@ -39,8 +54,15 @@ export async function updateUserHandler(req: Request, res: Response) {
 }
 
 export async function getUsersHandler(req: Request, res: Response) {
+
+  const { params } = req;
+
+  let payload = {};
+
+  if (params.wallet_id) payload = {polygon_address: params.wallet_id}
+
   try {
-    const users = await getUsers({});
+    const users = await getUsers(payload);
 
     if (users) {
       return res.send(users);

@@ -19,6 +19,8 @@ export default function (app: Express) {
     app.put("/api/users/:user_id", updateUserHandler);
     app.delete("/api/users/:user_id", deleteUserHandler);
 
+    app.get("/api/users/wallet/:wallet_id", getUsersHandler);
+
     app.post("/api/jobs", validateRequest(createJobSchema), createJobHandler);
     app.get("/api/jobs", getJobsHandler);
     app.get("/api/jobs/:job_id", getJobsHandler);

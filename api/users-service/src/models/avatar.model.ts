@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from  'mongoose';
 
 export interface AvatarDocument extends Document {
-    avatar: String,
+    avatar: Buffer,
     user: Schema.Types.ObjectId
 }
 

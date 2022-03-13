@@ -35,10 +35,14 @@ export async function updateUserHandler(req: Request, res: Response) {
 export async function getUsersHandler(req: Request, res: Response) {
   const { params } = req;
   let query_id = ""
-  if (params && params.user_id) query_id = `/${params.user_id}`
-
+  if (params.user_id) query_id = `/${params.user_id}`
+  if (params.wallet_id) query_id = `/wallet/${params.wallet_id}`
+  console.log(usersApiUrl + query_id)
   await axios.get(usersApiUrl + query_id)
-    .then((response: any) => res.status(200).send(response.data))
+    .then((response: any) => {
+      res.status(200).send(response.data)
+      console.log(response.data)
+    })
     .catch((err: any) => {
       log.error(`Failed to get users`)
       console.log(err);
