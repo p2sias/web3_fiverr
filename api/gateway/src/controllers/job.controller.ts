@@ -128,7 +128,7 @@ export async function getJobsByUserHandler(req: Request, res: Response) {
     
     if (!params || !params.user_id) res.send(400).send("Please provide user id")
 
-    await axios.get(usersApiUrl + `/${params.user_id}/jobs`)
+    await axios.get(jobsApiUrl + `/${params.user_id}/jobs`)
         .then((response: any) => res.status(200).send(response.data))
         .catch((err: any) => {
             log.error(`Failed to get jobs of user(${params.user_id})`)

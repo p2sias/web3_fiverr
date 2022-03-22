@@ -2,6 +2,10 @@ import Vue from 'vue'
 import VueRouter, { RouteConfig } from 'vue-router'
 import Home from '../views/Home.vue'
 import Profile from '../views/Profile.vue'
+import Settings from '../views/Settings.vue'
+import ProfileSettings from '../views/Tabs/Settings/ProfileSettings.vue'
+import Jobs from '../views/Tabs/Profile/Jobs.vue'
+import Orders from '../views/Tabs/Profile/Orders.vue'
 
 Vue.use(VueRouter)
 
@@ -13,9 +17,43 @@ const routes: Array<RouteConfig> = [
   },
 
   {
-    path: '/profile',
+    path: '/account',
     name: 'Profile',
-    component: Profile
+    component: Profile,
+    children: [
+      {
+        path: '/account/jobs',
+        name: 'Jobs',
+        component: Jobs
+      }, 
+
+      {
+        path: '/account/orders',
+        name: 'Orders',
+        component: Orders
+      }
+    ]
+  },
+
+  {
+    path: '/user/:id',
+    name: 'OtherProfile',
+    component: Profile,
+  },
+
+  {
+    path: '/account/settings',
+    name: 'Settings',
+    component: Settings,
+    children: [
+
+      {
+        path: '/account/settings/profile',
+        name: 'ProfileSettings',
+        component: ProfileSettings
+      },
+
+    ]
   }
 ]
 

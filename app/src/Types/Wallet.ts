@@ -14,6 +14,10 @@ export default class Wallet {
                 if (oldNetwork) window.location.reload();
             })
         }
+
+        ethereum.on('accountsChanged', () => {
+            this.connect()
+        })
     }
 
     async getNetwork(): Promise<string> {
@@ -45,8 +49,7 @@ export default class Wallet {
         try {
             if (_ethereum) {
                 const accounts = await _ethereum.request({ method: "eth_requestAccounts" });
-                store.commit('setAccount', accounts[0]);
-                console.log(`Set account to ${accounts[0]}`);
+                await store.dispatch('setAccount', accounts[0]);
                 return this;
             } 
         } catch (err) {
@@ -65,8 +68,7 @@ export default class Wallet {
 
             if (accounts.length !== 0) {
                 const account = accounts[0];
-                console.log(`Set account to ${account}`);
-                store.commit('setAccount', account);
+                await store.dispatch('setAccount', account);
                 return true;
             } else
             {

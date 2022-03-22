@@ -3,7 +3,7 @@ import { createUserHandler, getUsersHandler, updateUserHandler, deleteUserHandle
 import { createJobHandler, getJobsHandler, getJobsByUserHandler, getPictureByJobHandler, deleteJobHandler, updateJobHandler } from "./controllers/job.controller";
 import { createCategoryHandler, getJobsByCategory, getCategoriesHandler, deleteCategoryHandler, updateCategoryHandler } from "./controllers/category.controller";
 import { createPictureHandler, getPicturesHandler, deletePictureHandler } from "./controllers/picture.controller";
-import { createAvatarHandler, getAvatarsHandler, deleteAvatarHandler } from "./controllers/avatar.controller";
+import { createAvatarHandler, getAvatarsHandler, deleteAvatarHandler, updateAvatarHandler } from "./controllers/avatar.controller";
 
 
 
@@ -16,9 +16,9 @@ export default function (app: Express) {
 
     app.post("/api/users", validateRequest(createUserSchema), createUserHandler);
     app.get("/api/users", getUsersHandler);
+    app.get("/api/users/:user_id", getUsersHandler);
     app.put("/api/users/:user_id", updateUserHandler);
     app.delete("/api/users/:user_id", deleteUserHandler);
-
     app.get("/api/users/wallet/:wallet_id", getUsersHandler);
 
     app.post("/api/jobs", validateRequest(createJobSchema), createJobHandler);
@@ -34,10 +34,11 @@ export default function (app: Express) {
     app.get("/api/pictures", getPicturesHandler);
     app.get("/api/pictures/:picture_id", getPicturesHandler);
 
-    app.post("/api/avatars", createAvatarHandler);
+    //app.post("/api/avatars", createAvatarHandler);
     app.delete("/api/avatars/:avatar_id", deleteAvatarHandler);
     app.get("/api/avatars", getAvatarsHandler);
     app.get("/api/avatars/:avatar_id", getAvatarsHandler);
+    app.put("/api/avatars/:avatar_id", updateAvatarHandler);
 
 
     app.post("/api/categories", createCategoryHandler);

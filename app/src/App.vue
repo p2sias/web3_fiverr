@@ -18,6 +18,14 @@
 
       <v-btn
         text
+        @click="newJob"
+      >
+        <span class="mr-2">New job</span>
+        <v-icon>mdi-tag-plus</v-icon>
+      </v-btn>
+
+      <v-btn
+        text
       >
         <span class="mr-2">Support</span>
         <v-icon>mdi-face-agent</v-icon>
@@ -25,9 +33,10 @@
 
       <v-btn
         text
+        @click="goToProfile"
       >
-        <span class="mr-2" @click="goToProfile">Profil</span>
-        <v-icon v-if="!avatarLoaded">mdi-account-circle-outline</v-icon>
+        <span class="mr-2">Profil</span>
+        <v-icon v-if="!userLoaded">mdi-account-circle-outline</v-icon>
         <img class="avatar" v-else :src="avatar" alt="profile pic">
       </v-btn>
     </v-app-bar>
@@ -40,9 +49,46 @@
       {{ snackbarText }}
     </v-snackbar>
 
-    <v-main id="main-vue">
-      <router-view/>
-    </v-main>
+      <v-dialog
+        v-model="jobDialog"
+        fullscreen
+        hide-overlay
+        transition="dialog-bottom-transition"
+      >
+        <v-card>
+          <v-toolbar
+            dark
+            color="primary"
+          >
+            <v-btn
+              icon
+              dark
+              @click="jobDialog = false"
+            >
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+            <v-toolbar-title>New Job</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-toolbar-items>
+              <v-btn
+                dark
+                text
+                @click="jobDialog = false"
+              >
+                <v-icon>mdi-content-save</v-icon>  Save
+              </v-btn>
+            </v-toolbar-items>
+          </v-toolbar>
+
+          <v-container>
+              <JobCreate :user="user" />
+          </v-container> 
+         
+        </v-card>
+      </v-dialog>
+      <v-main id="main-vue">
+        <router-view/>
+      </v-main>
   </v-app>
 </template>
 
@@ -51,29 +97,55 @@ import { Component, Vue } from 'vue-property-decorator';
 import Wallet from './Types/Wallet'
 import axios from 'axios'
 import User from './Types/User';
+import JobCreate from './components/JobCreate.vue'
 
 
-@Component
+@Component({
+  components: {
+    JobCreate
+  }
+})
 export default class App extends Vue {
 
   private snackbar = false;
   private snackbarText = "";
   private currentNetwork = "";
 
+  private jobDialog = false;
+
+  private plans = [
+    
+  ]
+
+  private newJobPictures: string[] = []
+
+  private newJob() {
+    this.jobDialog = true;
+  }
+
   private get walletConnected() {
     return this.$store.state.connected;
   }
 
-  private get avatarLoaded() {
-    return this.$store.state.avatarLoaded;
+  private get userLoaded() {
+    return this.$store.state.userLoaded;
   }
 
   private get avatar() {
     return this.$store.state.avatar;
   }
 
+  private get user() {
+    return this.$store.state.user;
+  }
 
-  async mounted() {
+  private goToProfile() {
+    this.$router.push({path: '/account/jobs'})
+    window.location.reload();
+  }
+
+
+  async created() {
     this.$store.commit('setWallet', new Wallet())
     
     await this.$store.state.wallet.connected()
@@ -82,39 +154,16 @@ export default class App extends Vue {
 
         let network = await this.$store.state.wallet.getNetwork()
         
-        if(network != 'homestead')
+        if(network != 'matic')
         {
-          this.snackbarText = `You are currently on ${network} network, please switch to a mainnet !`
+          this.snackbarText = `You are currently on ${network} network, please switch to polygon mainnet network !`
           this.snackbar = true;
         } else this.snackbar = false;
-
-        await axios.get(`http://localhost:9696/api/users/wallet/${this.$store.state.currentAccount}`)
-        .then(async (res: any) => {
-
-          if(res.data.length > 0) {
-            this.$store.commit('setUser', res.data[0]);
-          }
-
-          else {
-            await axios.post(`http://localhost:9696/api/users`, {polygon_address: this.$store.state.currentAccount}, {headers: {'Content-Type': 'application/json'}})
-            .then((res: any) => {
-              this.$store.commit('setUser', res.data);
-            })
-          }
-
-          
-
-        }).catch((err: any) => {console.log(err)})
       }
     })
     .catch((err: any) => {
       console.log(err)
     })
-  }
-
-  private goToProfile()
-  {
-    this.$router.push({path: '/profile'})
   }
 }
 
@@ -122,6 +171,12 @@ export default class App extends Vue {
 </script>
 
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600&display=swap');
+
+  * {
+    font-family: 'Fredoka', sans-serif;
+  }
+
   .avatar {
     width: 30px;
     height: 30px;

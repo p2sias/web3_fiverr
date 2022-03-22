@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from  'mongoose';
+import { string } from 'yup';
 
 export interface UserDocument extends Document {
     polygon_address: string,
@@ -6,7 +7,8 @@ export interface UserDocument extends Document {
     mail: string,
     jobs: Array<Schema.Types.ObjectId>,
     avatar: Schema.Types.ObjectId | null,
-    jwt_token: string | null
+    jwt_token: string | null,
+    bio: string | null
 }
 
 const userSchema = new Schema<UserDocument>({
@@ -15,8 +17,12 @@ const userSchema = new Schema<UserDocument>({
     pseudo: { type: String },
     jobs: [{ type: Schema.Types.ObjectId, ref: 'Job' }],
     avatar: {type: Schema.Types.ObjectId, ref: 'Avatar'},
-    jwt_token: {type: String}
-})
+    jwt_token: { type: String },
+    bio: {type: String}
+},
+    {
+        timestamps: true
+    })
 
 const User = mongoose.model<UserDocument>('User', userSchema);
 

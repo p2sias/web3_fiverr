@@ -16,6 +16,22 @@ export async function createAvatarHandler(req: Request, res: Response) {
     })
 }
 
+export async function updateAvatarHandler(req: Request, res: Response) {
+  const { params } = req;
+
+  if (!params.avatar_id) return res.sendStatus(400);
+
+  await axios.put(`${avatarsApiUrl}/${params.avatar_id}`, req.body)
+    .then((response: any) => {
+      log.info(`Succefully updated avatar(${params.avatar_id})`)
+      res.status(200).send(response.data);
+    })
+    .catch((err: any) => {
+      log.error(`Failed to update avatar(${params.avatar_id})`)
+      console.log(err);
+    })
+}
+
 export async function getAvatarsHandler(req: Request, res: Response) {
   const { params } = req;
   let query_id = ""

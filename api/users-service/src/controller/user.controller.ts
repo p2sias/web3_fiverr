@@ -15,7 +15,8 @@ export async function createUserHandler(req: Request, res: Response) {
 
     
     const identicon = require('identicon')
-    const buffer: Buffer = identicon.generateSync({ id: user.polygon_address, size: 200 })
+    const buffer = identicon.generateSync({ id: user.polygon_address, size: 200 })
+
     
     let avatar = await createAvatar({
       avatar: buffer,
@@ -60,6 +61,7 @@ export async function getUsersHandler(req: Request, res: Response) {
   let payload = {};
 
   if (params.wallet_id) payload = {polygon_address: params.wallet_id}
+  if (params.user_id) payload = {_id: params.user_id}
 
   try {
     const users = await getUsers(payload);

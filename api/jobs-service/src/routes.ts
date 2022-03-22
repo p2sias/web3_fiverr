@@ -9,7 +9,7 @@ export default function (app: Express) {
     app.post("/api/jobs", createJobHandler);
     app.get("/api/jobs", getJobsHandler);
     app.get("/api/jobs/:job_id", getJobsHandler);
-    app.get("/api/users/:user_id/jobs", getJobsByUserHandler);
+    app.get("/api/jobs/:user_id/jobs", getJobsByUserHandler);
     app.get("/api/jobs/:job_id/pictures", getPictureByJobHandler);
     app.delete("/api/jobs/:job_id", deleteJobHandler);
     app.put("/api/jobs/:job_id", updateJobHandler);

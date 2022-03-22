@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { createAvatar, getAvatars, deleteAvatar, findAvatar  } from "../service/avatar.service";
+import { createAvatar, getAvatars, deleteAvatar, findAvatar, findAndUpdateAvatar  } from "../service/avatar.service";
 import { findUser, findAndUpdateUser, getUsers } from "../service/user.service";
 import log from "../logger";
 import { get } from "lodash";
@@ -27,6 +27,24 @@ export async function createAvatarHandler(req: Request, res: Response) {
     log.error(e);
     return res.status(409).send(e.message);
   }
+}
+
+export async function updateAvatarHandler(req: Request, res: Response) {
+  const { params } = req;
+
+  if (!params.avatar_id) return res.sendStatus(400);
+  
+  const update = {avatar: req.body.avatar.data};
+
+  const avatar = await findAvatar({ _id: params.avatar_id});
+
+  if (!avatar) {
+    return res.sendStatus(404);
+  }
+
+  const updatedAvatar = await findAndUpdateAvatar({ _id: params.avatar_id }, update, { new: true });
+
+  return res.status(200).send(updatedAvatar);
 }
 
 export async function getAvatarsHandler(req: Request, res: Response) {

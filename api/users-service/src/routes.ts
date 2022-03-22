@@ -1,6 +1,6 @@
 import { Express, Request, Response } from "express";
 import { createUserHandler, getUsersHandler, updateUserHandler, deleteUserHandler } from "./controller/user.controller";
-import { createAvatarHandler, getAvatarsHandler, deleteAvatarHandler } from "./controller/avatar.controller";
+import { createAvatarHandler, getAvatarsHandler, deleteAvatarHandler, updateAvatarHandler } from "./controller/avatar.controller";
 
 export default function (app: Express) {  
     app.post("/api/users", createUserHandler);
@@ -14,6 +14,7 @@ export default function (app: Express) {
     app.delete("/api/avatars/:avatar_id", deleteAvatarHandler);
     app.get("/api/avatars", getAvatarsHandler);
     app.get("/api/avatars/:avatar_id", getAvatarsHandler);
+    app.put("/api/avatars/:avatar_id", updateAvatarHandler);
 
     app.get("/alive", (req: Request, res: Response) => {
         res.status(200).send("ok");
