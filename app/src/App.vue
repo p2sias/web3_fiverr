@@ -55,36 +55,9 @@
         hide-overlay
         transition="dialog-bottom-transition"
       >
-        <v-card>
-          <v-toolbar
-            dark
-            color="primary"
-          >
-            <v-btn
-              icon
-              dark
-              @click="jobDialog = false"
-            >
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
-            <v-toolbar-title>New Job</v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-toolbar-items>
-              <v-btn
-                dark
-                text
-                @click="jobDialog = false"
-              >
-                <v-icon>mdi-content-save</v-icon>  Save
-              </v-btn>
-            </v-toolbar-items>
-          </v-toolbar>
-
-          <v-container>
-              <JobCreate :user="user" />
-          </v-container> 
+       
+          <JobCreate :user="user" @done="jobDialog = false" />
          
-        </v-card>
       </v-dialog>
       <v-main id="main-vue">
         <router-view/>

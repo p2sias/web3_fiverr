@@ -1,12 +1,12 @@
-interface JobPlan {
+export interface JobPlan {
     type: string,
     price: number,
     plan_desc: string,
     max_delivery_day: number
 }
 
-export default interface Job {
-    _id: string,
+export interface Job {
+    _id?: string,
     title: string,
     about: string,
     photos: string[],

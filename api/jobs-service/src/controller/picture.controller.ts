@@ -16,6 +16,8 @@ export async function createPictureHandler(req: Request, res: Response) {
       return res.sendStatus(404);
     }
 
+    if(!job.photos) job.photos = [];
+
     job.photos.push(picture._id);
 
     await findAndUpdateJob({ _id: job._id }, job, { new: true })
@@ -61,7 +63,7 @@ export async function deletePictureHandler(req: Request, res: Response) {
 
   let job = await findJob({ _id: picture.job });
 
-  if (job)
+  if (job && job.photos)
   {
     job.photos.splice(job.photos.indexOf(picture._id), 1);
     await findAndUpdateJob({ _id: job._id }, job, { new: true });

@@ -1,12 +1,25 @@
 import { Request, Response } from "express";
 import { createJob, findJob, findAndUpdateJob, getJobs, deleteJob } from "../service/job.service";
-import { getPictures, deletePicture } from "../service/picture.service";
+import { createPicture, getPictures, deletePicture } from "../service/picture.service";
 import log from "../logger";
 import { get } from "lodash";
 
 export async function createJobHandler(req: Request, res: Response) {
   try {
-    const job = await createJob(req.body);
+    
+    const newJob = req.body
+    const job = await createJob({
+      title: newJob.title,
+      about: newJob.about,
+      category: newJob.category,
+      plans: newJob.plans,
+      user: newJob.user
+    });
+
+    for(const b64pic of newJob.photos) {
+      await createPicture({job: job._id, image: b64pic});
+    }
+
     return res.send(job.toJSON());
   } catch (e: any) {
     log.error(e);
@@ -90,8 +103,10 @@ export async function deleteJobHandler(req: Request, res: Response) {
     return res.sendStatus(404);
   }
 
-  for (const photo of job.photos) {
-    await deletePicture({ _id: photo });
+  if (job.photos) {
+    for (const photo of job.photos) {
+      await deletePicture({ _id: photo });
+    }
   }
 
   await deleteJob({ _id: params.job_id });

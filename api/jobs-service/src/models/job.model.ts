@@ -10,7 +10,7 @@ export interface JobPlan {
 export interface JobDocument extends Document {
     title: string,
     about: string,
-    photos: Array<Schema.Types.ObjectId>,
+    photos?: Array<Schema.Types.ObjectId>,
     user: Schema.Types.ObjectId,
     plans: Array<JobPlan>,
     category: Schema.Types.ObjectId

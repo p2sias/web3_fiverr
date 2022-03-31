@@ -118,7 +118,7 @@
 
 <script lang="ts">
 import {Vue, Component, Prop, Watch} from "vue-property-decorator";
-import Job from '../Types/Job'
+import {Job} from '../Types/Job'
 import axios from 'axios'
 import User from "../Types/User";
 
@@ -128,7 +128,6 @@ export default class JobComponent extends Vue {
     @Prop() readonly job: Job | undefined
     @Prop() readonly author: User | undefined
 
-
     private dialog = false;
     private loading = false;
     private pictures: any[] = [];
@@ -137,8 +136,7 @@ export default class JobComponent extends Vue {
         return address.substring(0, 6) + "..." + address.substring(35, address.length-1)
     }
 
-
-     private getLowestPrice(job: any): number {
+    private getLowestPrice(job: any): number {
         if(job) {
             let price = 0;
 
@@ -164,18 +162,18 @@ export default class JobComponent extends Vue {
             .then((res) => {
                 for(const photo of res.data) {
                     const pictureBuffer = photo.image.data;
-                    const base64String = 'data:image/jpg;base64,' + Buffer.from(pictureBuffer).toString();
+                    const base64String = Buffer.from(pictureBuffer).toString();
                     this.pictures.push(base64String);
                 }
             })
-        }
-        
+        } 
     }
 
     private show() {
         this.dialog = true;
     }
 }
+
 </script>
 
 <style scoped>

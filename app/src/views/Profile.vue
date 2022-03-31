@@ -411,7 +411,7 @@ export default class Home extends Vue {
         position: relative;
         width: 100%;
         background-color: #202225;
-        height: 100%;
+        min-height: 350px;
         top: -350px;
 
         -webkit-box-shadow: 0px -12px 43px 16px #202225; 
