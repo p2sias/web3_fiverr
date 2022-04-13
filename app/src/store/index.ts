@@ -1,8 +1,9 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import Wallet from "../Types/Wallet"
+import Wallet from "../Types/blockchain/Wallet"
 import User from "../Types/User"
 import axios from 'axios'
+import Contract from "../Types/blockchain/Contract"
 
 Vue.use(Vuex)
 
@@ -10,6 +11,7 @@ export default new Vuex.Store({
   state: {
     currentAccount: '0x0',
     wallet: null as Wallet | null,
+    contract: null as Contract | null,
     connected: false,
     user: null as User | null,
     avatar: '',
@@ -41,6 +43,10 @@ export default new Vuex.Store({
     setWallet(state, wallet: Wallet) {
       state.wallet = wallet;
     },
+
+    setContract(state, contract: Contract) {
+      state.contract = contract;
+    }
   },
   actions: {
     async updateUser({state}, user: User): Promise<boolean>

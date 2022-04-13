@@ -140,7 +140,7 @@
 <script lang="ts">
 import { Component, Vue, Watch } from 'vue-property-decorator';
 import { ethers } from 'ethers';
-import Wallet from '../Types/Wallet'
+import Wallet from '../Types/Blockchain/Wallet'
 import axios from 'axios'
 import User from '../Types/User';
 import JobComponent from '../components/JobComponent.vue'
@@ -243,10 +243,10 @@ export default class Home extends Vue {
     private checkBioLength(bio: string): string {
         if(bio) {
             if (bio.length < 400) {
-                return 'no-developped'
+                return ''
             } else {
                 this.longBio = true;
-                return ''
+                return 'no-developped'
             }
         } else {
             this.longBio = false;
@@ -412,10 +412,10 @@ export default class Home extends Vue {
         width: 100%;
         background-color: #202225;
         min-height: 350px;
-        top: -350px;
-
-        -webkit-box-shadow: 0px -12px 43px 16px #202225; 
-        box-shadow: 0px -12px 43px 16px #202225;
+        
+        box-shadow: none;
+        -webkit-box-shadow: none;
+        
     }
 
     .arrow-box {
@@ -436,18 +436,14 @@ export default class Home extends Vue {
     }
 
     .no-developped {
-        box-shadow: none;
-        -webkit-box-shadow: none;
-        top: 74px;
+        -webkit-box-shadow: 0px -12px 43px 16px #202225; 
+        box-shadow: 0px -12px 43px 16px #202225;
+        top: -350px;
     }
 
-    .no-developped .arrow {
-        -webkit-transform:rotate(180deg);
-        -moz-transform: rotate(180deg);
-        -ms-transform: rotate(180deg);
-        -o-transform: rotate(180deg);
-        transform: rotate(180deg);
-    }
+
+
+   
 
     .currentRoute {
         border-bottom: solid white 1px;

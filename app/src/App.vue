@@ -67,7 +67,8 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import Wallet from './Types/Wallet'
+import Wallet from './Types/blockchain/Wallet'
+import Contract from './Types/blockchain/Contract'
 import axios from 'axios'
 import User from './Types/User';
 import JobCreate from './components/JobCreate.vue'
@@ -120,14 +121,16 @@ export default class App extends Vue {
 
   async created() {
     this.$store.commit('setWallet', new Wallet())
+    this.$store.commit('setContract', new Contract("0x45EFE4EFD2FADE8f8A4F78ACE8e1f73e807AbDc5", this.$store.state.wallet))
     
     await this.$store.state.wallet.connected()
     .then(async (connected: boolean) => {
       if(connected) {
 
         let network = await this.$store.state.wallet.getNetwork()
+        console.log(network)
         
-        if(network != 'matic')
+        if(network != 'matic' && network != "maticmum")
         {
           this.snackbarText = `You are currently on ${network} network, please switch to polygon mainnet network !`
           this.snackbar = true;

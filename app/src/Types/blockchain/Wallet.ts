@@ -1,6 +1,6 @@
 import { Web3Provider} from "@ethersproject/providers";
 import { ethers } from "ethers";
-import store from "../store"
+import store from "../../store"
 
 export default class Wallet {
     provider: Web3Provider | null = null;
