@@ -164,6 +164,7 @@ import {Vue, Component, Prop} from 'vue-property-decorator'
 import User from '../Types/User';
 import axios from 'axios'
 import {Job , JobPlan} from '../Types/Job';
+import { BigNumber } from '@ethersproject/bignumber';
 
 @Component
 export default class JobCreate extends Vue {
@@ -177,6 +178,7 @@ export default class JobCreate extends Vue {
         title: '',
         about: '',
         user: '',
+        user_address:'',
         plans: [
             {type: "Basic", price: 0, plan_desc: '', max_delivery_day: 0, activated: false},
             {type: "Standard", price: 0, plan_desc: '', max_delivery_day: 0, activated: false},
@@ -199,6 +201,7 @@ export default class JobCreate extends Vue {
             title: '',
             about: '',
             user: '',
+            user_address:'',
             plans: [
                 {type: "Basic", price: 0, plan_desc: '', max_delivery_day: 0, activated: false},
                 {type: "Standard", price: 0, plan_desc: '', max_delivery_day: 0, activated: false},
@@ -245,6 +248,7 @@ export default class JobCreate extends Vue {
                 title: '',
                 about: '',
                 user: '',
+                user_address:'',
                 plans: [] as JobPlan[],
                 category: '',
                 photos: [] as Buffer[]
@@ -255,19 +259,34 @@ export default class JobCreate extends Vue {
 
             if(this.user._id){
                 job.user = this.user._id;
+                job.user_address = this.user.polygon_address;
             }
-            
+
+            let plans_types: string[] = []
+            let basic_price = 0;
+            let premium_price = 0;
+            let standard_price = 0;
+
             for(const plan of this.newJobObject.plans) {
                 if(plan.activated)
                 {
+                    plans_types.push(plan.type);
                     job.plans.push({
                         type: plan.type,
                         price: plan.price as number,
                         plan_desc: plan.plan_desc,
                         max_delivery_day: plan.max_delivery_day
                     });
+
+                    if(plan.type == "Basic") basic_price = (plan.price as number);
+                    if(plan.type == "Premium") premium_price = (plan.price as number);
+                    if(plan.type == "Standard") standard_price = (plan.price as number);
+                    
                 }
             }
+
+            console.log(plans_types);
+            
         
             job.category = this.categories.find((x :any) => x.name = this.newJobObject.category)._id
 
@@ -283,15 +302,29 @@ export default class JobCreate extends Vue {
                 maxBodyLength: 100000000
 
             })
-            .then((res: any) => {
-                this.jobLoading = false;
+            .then(async (res: any) => {    
+                await this.$store.state.contract.createJob(
+                    res.data._id,
+                    plans_types.includes("Basic"),
+                    plans_types.includes("Premium"),
+                    plans_types.includes("Standard"),
+                    basic_price,
+                    premium_price,
+                    standard_price
+                ).then((res: any) => {
+                    this.jobLoading = false;
+                    this.$emit("done") 
+                    this.reset()
+                })
 
-                this.$emit("done") 
-                this.reset()
             }).catch((err: any) => {
                 console.log(err);
                 this.jobLoading = false;
             });
+
+            
+
+            
         }
     }
 

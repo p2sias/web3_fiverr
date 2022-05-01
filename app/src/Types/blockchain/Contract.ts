@@ -2,13 +2,15 @@ import { ethers } from "ethers";
 import abi from "./abi/webThreeSales.json";
 import { Web3Provider, JsonRpcSigner } from "@ethersproject/providers";
 import Wallet from "./Wallet"
-import Order from "./Order";
+import store from "../../store"
 
 export default class Contract {
     provider: Web3Provider;
     contractAddress: string;
     contractABI: any;
     signer: JsonRpcSigner;
+
+    
 
     constructor(_address: string, _wallet: Wallet) {
         this.provider = new ethers.providers.Web3Provider(_wallet.getEthClient());
@@ -40,26 +42,76 @@ export default class Contract {
         }
     }
 
-    async postOrder(_apiId: string,
-                    _deliveryDay: number,
-                    _workerAddress: string,
-                    _orderTitle: string,
-                    _orderDesc: string,
-                    _planTitle: string,
-                    _planDesc: string,
-                    _planPrice: string): Promise<boolean> {
+    async createJob(
+        _apiId: string,
+        _basicPlan: boolean,
+        _premiumPLan: boolean,
+        _standardPlan: boolean,
+        _basicPrice: number,
+        _premiumPrice: number,
+        _standardPrice: number
+    ): Promise<boolean> {
+
+        try {
+            if (this.webFiverContract) {
+
+                console.log(_basicPlan)
+                await this.webFiverContract.createJob(
+                    _apiId,
+                    _basicPlan,
+                    _premiumPLan,
+                    _standardPlan,
+                    ethers.utils.parseEther(_basicPrice.toString()),
+                    ethers.utils.parseEther(_premiumPrice.toString()),
+                    ethers.utils.parseEther(_standardPrice.toString())
+                );
+                return true;
+            } else return false;
+        } catch(err) {
+            console.log(err);
+            return false;
+        }
+    }
+
+    private sleep = (milliseconds: number) => {
+        return new Promise(resolve => setTimeout(resolve, milliseconds))
+    }
+
+    async postOrder(
+        _apiId: string,
+        _deliveryDay: number,
+        _orderTitle: string,
+        _orderDesc: string,
+        _planTitle: string,
+        _planDesc: string
+        
+        ): Promise<boolean> {
         try { 
             if (this.webFiverContract) {
-                await this.webFiverContract.whitelistAddWaver(
+                await this.webFiverContract.postOrder(
                     _apiId,
                     _deliveryDay,
-                    _workerAddress,
                     _orderTitle,
                     _orderDesc,
                     _planTitle,
-                    _planDesc,
-                    _planPrice
+                    _planDesc
                 );
+                
+                await this.sleep(15000);
+
+                return true;
+            } else return false;
+        } catch (err) {
+            console.log(err);
+            return false;
+        }
+    }
+
+    async payOrder(_apiId: string, _price: string): Promise<boolean> {
+        try { 
+            if (this.webFiverContract) {
+                
+                await this.webFiverContract.payOrder(_apiId, {value: ethers.utils.parseEther(_price)});
                 return true;
             } else return false;
         } catch (err) {

@@ -13,7 +13,8 @@ export async function createJobHandler(req: Request, res: Response) {
       about: newJob.about,
       category: newJob.category,
       plans: newJob.plans,
-      user: newJob.user
+      user: newJob.user,
+      user_address: newJob.user_address
     });
 
     for(const b64pic of newJob.photos) {

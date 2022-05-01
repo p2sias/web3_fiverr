@@ -8,6 +8,8 @@ export default interface Order {
     plan_desc: string,
     status: string,
     desc: string,
+    payed: boolean,
+    customer_accepted: boolean,
     accepted: boolean,
     accepted_at: number,
     ordered_at: number

@@ -115,13 +115,13 @@ export default class App extends Vue {
 
   private goToProfile() {
     this.$router.push({path: '/account/jobs'})
-    window.location.reload();
+    window.location.reload()
   }
 
 
   async created() {
     this.$store.commit('setWallet', new Wallet())
-    this.$store.commit('setContract', new Contract("0x45EFE4EFD2FADE8f8A4F78ACE8e1f73e807AbDc5", this.$store.state.wallet))
+    this.$store.commit('setContract', new Contract("0xF5Dec354f71AFB4Be1dCAFab15d414A40D900622", this.$store.state.wallet))
     
     await this.$store.state.wallet.connected()
     .then(async (connected: boolean) => {

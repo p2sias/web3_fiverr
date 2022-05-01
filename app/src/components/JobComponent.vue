@@ -98,7 +98,7 @@
                                         
                                         <v-container>
                                             <v-card-actions class="d-flex justify-space-between">
-                                                <v-btn>
+                                                <v-btn @click="placeOrder(plan)">
                                                     <v-icon>mdi-cash</v-icon>
                                                     <span>{{plan.price}} MATIC</span>
                                                 </v-btn>
@@ -113,16 +113,26 @@
                 </v-card-text>
             </v-card>
         </v-dialog>
+
+        <v-container v-if="payment_process">
+            <PaymentComponent :job="job" :plan="plan_to_order" />
+        </v-container>
     </div>
 </template>
 
 <script lang="ts">
-import {Vue, Component, Prop, Watch} from "vue-property-decorator";
-import {Job} from '../Types/Job'
+import {Vue, Component, Prop} from "vue-property-decorator";
+import {Job, JobPlan} from '../Types/Job'
 import axios from 'axios'
 import User from "../Types/User";
+import PaymentComponent from '../components/PaymentComponent.vue'
+import Contract from "../Types/blockchain/Contract";
 
-@Component
+@Component({
+    components: {
+        PaymentComponent
+    }
+})
 export default class JobComponent extends Vue {
 
     @Prop() readonly job: Job | undefined
@@ -171,6 +181,14 @@ export default class JobComponent extends Vue {
 
     private show() {
         this.dialog = true;
+    }
+
+    private plan_to_order: JobPlan | null = null
+    private payment_process = false; 
+
+    private async placeOrder(plan: JobPlan) {
+        this.plan_to_order = plan;
+        this.payment_process = true;
     }
 }
 

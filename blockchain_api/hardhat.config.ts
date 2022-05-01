@@ -26,7 +26,7 @@ const config: HardhatUserConfig = {
   solidity: "0.8.4",
   networks: {
     matic: {
-      url: "https://rpc-mumbai.maticvigil.com",
+      url: "https://polygon-mumbai.g.alchemy.com/v2/DnPO1gsjz_zxjuGl6HQriaBCc3FQDVc4",
       accounts: 
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },

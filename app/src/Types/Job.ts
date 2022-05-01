@@ -12,5 +12,6 @@ export interface Job {
     photos: string[],
     user: string,
     plans: JobPlan[],
+    user_address: string,
     category: string
 }

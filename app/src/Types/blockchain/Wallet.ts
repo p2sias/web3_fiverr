@@ -44,6 +44,18 @@ export default class Wallet {
         }
     }
 
+    async signTOS(): Promise<boolean> {
+        const TOS = "Terms of services\n\n accept the terms of service, this signature will cost you nothing";
+        try {
+            await this.provider?.getSigner().signMessage(TOS);
+            return true;
+        } catch(err) {
+            console.log(err);
+            return false;
+        }
+        
+    }
+
     async connect(): Promise<Wallet | null> {
         const _ethereum = this.getEthClient();
         try {

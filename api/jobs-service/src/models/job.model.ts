@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
+import { string } from 'yup';
 
 export interface JobPlan {
     type: string,
@@ -12,6 +13,7 @@ export interface JobDocument extends Document {
     about: string,
     photos?: Array<Schema.Types.ObjectId>,
     user: Schema.Types.ObjectId,
+    user_address: string,
     plans: Array<JobPlan>,
     category: Schema.Types.ObjectId
 }
@@ -28,6 +30,7 @@ const jobSchema = new Schema<JobDocument>({
     about: { type: String, required: true },
     photos: [{ type: Schema.Types.ObjectId, ref: 'Picture' }],
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    user_address: {type: String},
     plans: [planSchema],
     category: { type: Schema.Types.ObjectId, required: true, ref: 'Category' },
     
