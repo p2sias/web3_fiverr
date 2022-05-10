@@ -4,6 +4,7 @@ import Wallet from "../Types/blockchain/Wallet"
 import User from "../Types/User"
 import axios from 'axios'
 import Contract from "../Types/blockchain/Contract"
+import Order from '@/Types/blockchain/Order'
 
 Vue.use(Vuex)
 
@@ -15,7 +16,9 @@ export default new Vuex.Store({
     connected: false,
     user: null as User | null,
     avatar: '',
-    userLoaded: false
+    userLoaded: false,
+    orders: [] as Order[],
+    ordered: [] as Order[],
   },
   mutations: {
     setAccount(state, account: string) {
@@ -49,6 +52,14 @@ export default new Vuex.Store({
     }
   },
   actions: {
+    async updateOrdered({state}) {
+      await state.contract?.getOrdered().then((orders: Order[]) => state.ordered = orders)
+    },
+
+    async updateOrders({state}) {
+      await state.contract?.getOrders().then((orders: Order[]) => state.orders = orders)
+    },
+
     async updateUser({state}, user: User): Promise<boolean>
     {
       let userChanged = false;

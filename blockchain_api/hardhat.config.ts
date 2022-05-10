@@ -31,6 +31,12 @@ const config: HardhatUserConfig = {
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
 
+    maticmum: {
+      url: "https://polygon-mumbai.infura.io/v3/dcfca7fd37084528844bfc25199b8a12",
+      accounts: 
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    },
+
     ropsten: {
       url: process.env.ROPSTEN_URL || "",
       accounts:

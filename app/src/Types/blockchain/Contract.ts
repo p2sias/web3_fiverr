@@ -3,6 +3,7 @@ import abi from "./abi/webThreeSales.json";
 import { Web3Provider, JsonRpcSigner } from "@ethersproject/providers";
 import Wallet from "./Wallet"
 import store from "../../store"
+import Order from "./Order";
 
 export default class Contract {
     provider: Web3Provider;
@@ -28,25 +29,79 @@ export default class Contract {
         return parseInt(_hex, 16);
     }
 
+    async getBalance(): Promise<any> {
+        if(this.webFiverContract) {
+            await this.provider.getBalance(this.webFiverContract.address)
+            .then((res: any) => console.log(res))
+        } 
+    }
+
     async getOrders(): Promise<any> {
         if (this.webFiverContract) {
             const res: any = await this.webFiverContract.getOrders();
-            return res;
-        }
+
+            const orders: Order[] = []
+
+            res.forEach((order: any) => {
+                orders.push({
+                    api_id: order.api_id,
+                    delivery_day: this.formatHex(order.delivery_day._hex),
+                    worker_address: order.worker_address,
+                    title: order.order_title,
+                    plan_title: order.plan_title,
+                    price: this.formatHex(order.price._hex),
+                    plan_desc: order.plan_desc,
+                    status: order.status,
+                    ipfs_hash: order.ipfs_hash,
+                    desc: order.order_desc,
+                    accepted: order.accepted,
+                    user_infos: order.user_info,
+                    decline_reason: order.decline_reason,
+                    customer_accepted: order.customer_accepted,
+                    ordered_by: order.ordered_by,
+                    accepted_at: this.formatHex(order.accepted_at._hex),
+                    ordered_at: this.formatHex(order.ordered_at._hex)
+                })
+            });
+            
+            return orders;
+        } return [];
     }
 
-    async getOrdered(): Promise<any> {
+    async getOrdered(): Promise<Order[]> {
         if (this.webFiverContract) {
             const res: any = await this.webFiverContract.getOrdered();
-            return res;
-        }
+
+            const ordered: Order[] = []
+
+            res.forEach((order: any) => {
+                ordered.push({
+                    api_id: order.api_id,
+                    delivery_day: this.formatHex(order.delivery_day._hex),
+                    worker_address: order.worker_address,
+                    title: order.order_title,
+                    plan_title: order.plan_title,
+                    price: this.formatHex(order.price._hex),
+                    plan_desc: order.plan_desc,
+                    status: order.status,
+                    ipfs_hash: order.ipfs_hash,
+                    decline_reason: order.decline_reason,
+                    desc: order.order_desc,
+                    accepted: order.accepted,
+                    user_infos: order.user_info,
+                    customer_accepted: order.customer_accepted,
+                    ordered_by: order.ordered_by,
+                    accepted_at: this.formatHex(order.accepted_at._hex),
+                    ordered_at: this.formatHex(order.ordered_at._hex)
+                })
+            });
+            
+            return ordered;
+        } return [];
     }
 
     async createJob(
         _apiId: string,
-        _basicPlan: boolean,
-        _premiumPLan: boolean,
-        _standardPlan: boolean,
         _basicPrice: number,
         _premiumPrice: number,
         _standardPrice: number
@@ -54,13 +109,8 @@ export default class Contract {
 
         try {
             if (this.webFiverContract) {
-
-                console.log(_basicPlan)
                 await this.webFiverContract.createJob(
                     _apiId,
-                    _basicPlan,
-                    _premiumPLan,
-                    _standardPlan,
                     ethers.utils.parseEther(_basicPrice.toString()),
                     ethers.utils.parseEther(_premiumPrice.toString()),
                     ethers.utils.parseEther(_standardPrice.toString())
@@ -83,7 +133,9 @@ export default class Contract {
         _orderTitle: string,
         _orderDesc: string,
         _planTitle: string,
-        _planDesc: string
+        _planDesc: string,
+        _userInfos: string,
+        _planPrice: string
         
         ): Promise<boolean> {
         try { 
@@ -94,24 +146,15 @@ export default class Contract {
                     _orderTitle,
                     _orderDesc,
                     _planTitle,
-                    _planDesc
-                );
+                    _planDesc,
+                    _userInfos,
+                    {value: ethers.utils.parseEther(_planPrice)}
+                    );
                 
                 await this.sleep(15000);
-
-                return true;
-            } else return false;
-        } catch (err) {
-            console.log(err);
-            return false;
-        }
-    }
-
-    async payOrder(_apiId: string, _price: string): Promise<boolean> {
-        try { 
-            if (this.webFiverContract) {
                 
-                await this.webFiverContract.payOrder(_apiId, {value: ethers.utils.parseEther(_price)});
+                store.dispatch('updateOrdered')
+
                 return true;
             } else return false;
         } catch (err) {
@@ -120,79 +163,47 @@ export default class Contract {
         }
     }
 
-
-    /*
-    async wave(_message: string): Promise<boolean> {
-         try { 
-            if (this.wavePortalContract) {
-                await this.wavePortalContract.wave(_message, { gasLimit: 300000 });
+    async acceptOrDeclineWork(_order: Order, _action: string, _declineReason: string): Promise<boolean> {
+        try {
+            if(this.webFiverContract) {
+                console.log(store.state.currentAccount == _order.ordered_by)
+                await this.webFiverContract.approveOrDeclineWork(
+                    _order.api_id,
+                    _order.ordered_at,
+                    _action,
+                    store.state.currentAccount == _order.ordered_by.toLowerCase() ? true : false,
+                    _declineReason,
+                    _order.ordered_by
+                ) 
+                
+                await this.sleep(15000);
+                store.dispatch('updateOrders')
                 return true;
-            } else return false;
-        } catch (err) {
-            console.log(err);
+            }
+            return false;
+        } catch (error) {
+            console.log(error);
             return false;
         }
     }
 
-    async getWaverByAdddress(_address: string): Promise<Waver | null> {
-        try { 
-            if (this.wavePortalContract) {
-                const res: any = await this.wavePortalContract.getWaverByAddress(_address);
-                let totalWaves = this.formatHex(res.totalWaves._hex);
-                return new Waver(totalWaves, res.pseudo, res.pseudoChanged, res.added);;
-            } else return null;
-        } catch (err) {
-            console.log(err);
-            return null;
+    async finishOrder(
+        _jobId: string,
+        _customer: string,
+        _orderedAt: number,
+        _ipfsHash: string
+    ): Promise<boolean> {
+        try {
+            if(this.webFiverContract) {
+                await this.webFiverContract.finishJob(_jobId, _customer, _orderedAt, _ipfsHash)
+                
+                await this.sleep(15000);
+                store.dispatch('updateOrders');
+                return true
+            } return false;
+        } catch(err: any) {
+            console.log(err)
+            return false
         }
     }
-
-    async changePseudo(_pseudo: string): Promise<boolean> {
-        try { 
-            if (this.wavePortalContract) {
-                await this.wavePortalContract.changePseudo(_pseudo);
-                return true;
-            } else return false;
-        } catch (err: any) {
-            console.log(err);
-            return false;
-        }
-    }
-
-    async getTotalWaves(): Promise<number | null> {
-         try { 
-            if (this.wavePortalContract) {
-                const res: any = await this.wavePortalContract.getTotalWaves();
-                return this.formatHex(res._hex);;
-            } else return null;
-        } catch (err) {
-            console.log(err);
-            return null;
-        }
-    }
-
-    async getAllWaves(): Promise<Wave[] | null> {
-        const waves: Wave[] = [];
-        try { 
-            if (this.wavePortalContract) {
-                const res: any = await this.wavePortalContract.getAllWaves();
-
-                for (const wave of res) {
-                    waves.push({ 
-                        message: wave.message,
-                        timestamp: this.formatHex(wave.timestamp),
-                        waver: new Waver(
-                            this.formatHex(wave.waver.totalWaves),
-                            wave.waver.pseudo,
-                            wave.waver.pseudoChanged,
-                            wave.waver.added)
-                    })
-                }
-                return waves
-            } else return null;
-        } catch (err) {
-            console.log(err);
-            return null;
-        }
-    }*/
 }

@@ -6,6 +6,7 @@ import Settings from '../views/Settings.vue'
 import ProfileSettings from '../views/Tabs/Settings/ProfileSettings.vue'
 import Jobs from '../views/Tabs/Profile/Jobs.vue'
 import Orders from '../views/Tabs/Profile/Orders.vue'
+import Dashboard from '../views/Dashboard.vue'
 
 Vue.use(VueRouter)
 
@@ -14,6 +15,12 @@ const routes: Array<RouteConfig> = [
     path: '/',
     name: 'Home',
     component: Home
+  },
+
+  {
+    path: '/dashboard',
+    name: 'Dashboard',
+    component: Dashboard
   },
 
   {

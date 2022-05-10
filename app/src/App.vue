@@ -9,11 +9,23 @@
 
       <v-spacer></v-spacer>
 
+      <v-btn @click="getBalance">
+        Get balance
+      </v-btn>
+
       <v-btn
         text
       >
         <span class="mr-2">Accueil</span>
         <v-icon>mdi-home-circle-outline</v-icon>
+      </v-btn>
+
+       <v-btn
+        text
+        @click="dashboard"
+      >
+        <span class="mr-2">Dashboard</span>
+        <v-icon>mdi-desktop-mac-dashboard</v-icon>
       </v-btn>
 
       <v-btn
@@ -109,8 +121,17 @@ export default class App extends Vue {
     return this.$store.state.avatar;
   }
 
+  private async getBalance() {
+    const contract: Contract = this.$store.state.contract;
+    
+    await contract.getBalance();
+  }
+
   private get user() {
     return this.$store.state.user;
+  }
+  private dashboard() {
+    this.$router.push({path: '/dashboard'})
   }
 
   private goToProfile() {
@@ -121,12 +142,13 @@ export default class App extends Vue {
 
   async created() {
     this.$store.commit('setWallet', new Wallet())
-    this.$store.commit('setContract', new Contract("0xF5Dec354f71AFB4Be1dCAFab15d414A40D900622", this.$store.state.wallet))
+    this.$store.commit('setContract', new Contract("0xe78ea12533761457EBf9753481B25ADBAD03506a", this.$store.state.wallet))
     
     await this.$store.state.wallet.connected()
     .then(async (connected: boolean) => {
       if(connected) {
-
+        await this.$store.dispatch('updateOrdered')
+        await this.$store.dispatch('updateOrders')
         let network = await this.$store.state.wallet.getNetwork()
         console.log(network)
         

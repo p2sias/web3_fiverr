@@ -28,6 +28,17 @@
             </v-row>
 
             <v-row>
+              <v-col>
+                 <v-textarea
+                    outlined
+                    label="Please leave some informations about your order (details, contact info, ...)"
+                    v-model="user_info"
+                >
+                </v-textarea>
+              </v-col>
+            </v-row>
+
+            <v-row>
               <v-col cols="8" v-for="action in actions" :key="action.action">
                 <v-icon v-if="action.status != 'loading'" :color="getIconAction(action.status).color">
                   {{getIconAction(action.status).icon}}
@@ -65,10 +76,9 @@ import { Job, JobPlan } from '../Types/Job'
 export default class PaymentComponent extends Vue {
     @Prop() readonly job: Job | undefined;
     @Prop() readonly plan: JobPlan | undefined;
-    
-    private orders: Order[] = [];
 
     private displayed = true;
+    private user_info = "";
 
     private contract: Contract = this.$store.state.contract;
     private wallet: Wallet = this.$store.state.wallet;
@@ -76,7 +86,6 @@ export default class PaymentComponent extends Vue {
     private actions = [
       {action: "Please accept the terms of services by signing in your browser", status: "waiting"},
       {action: "Placing order", status: "waiting"},
-      {action: "Please pay order", status: "waiting"},
       {action: "Order done ! Waiting for worker accept", status: "waiting"}
     ]
 
@@ -88,35 +97,12 @@ export default class PaymentComponent extends Vue {
 
 
     private async start(step = "start") {
-        const orders = await this.contract.getOrdered()
-        if(this.job) {
-          const exist = orders.find((x: any) => x.api_id == this.job?._id)
+        if(step == "start") await this.signTOS();
 
-          if (exist && exist.payed == false) {
-            this.payOrder(this.job._id as string)
-            return
-          }
-        }
-
-        if(step == "start") {
-          
-          await this.signTOS();
-        }
-
-        if(step == "place" && this.orders && this.job) {
-          const job = this.job
+        if(step == "place" && this.job) {
           this.actions[0].status = "done";
-          
-          const job_exist = this.orders.find((x: Order) => x.api_id == job._id);
-
-          if(job_exist) {
-            this.actions[1].status = "done";
-            this.payOrder(job_exist.api_id as string);
-          }
-          else await this.placeOrder();
+          await this.placeOrder();
         }
-
-        
     }
 
     private async signTOS() {
@@ -137,6 +123,7 @@ export default class PaymentComponent extends Vue {
 
     private async placeOrder() {
       this.actions[1].status = "loading";
+      
       if(this.plan && this.job) {
           await this.contract.postOrder(
               this.job._id as string,
@@ -144,12 +131,14 @@ export default class PaymentComponent extends Vue {
               this.job.title,
               this.job.about,
               this.plan.type,
-              this.plan.plan_desc
+              this.plan.plan_desc,
+              this.user_info,
+              this.plan.price.toString()
           ).then(async (res: boolean) => {
             if(res && this.job) {
 
               this.actions[1].status = "done";
-              await this.payOrder(this.job._id as string);
+              this.actions[3].status = "done";
 
               
             } else {
@@ -157,48 +146,6 @@ export default class PaymentComponent extends Vue {
               }
           });
       }
-    }
-
-    private async payOrder(job_id: string) {
-      this.actions[0].status = "done";
-      this.actions[1].status = "done";
-      this.actions[2].status = "loading";
-
-
-      await this.contract.payOrder(job_id, this.plan?.price.toString() as string)
-        .then((res: boolean) => {
-          if (res) {
-            this.actions[2].status = "done";
-            this.actions[3].status = "done";
-          } else {
-            this.actions[2].status = "error";
-          }
-        })
-    }
-
-    async mounted() {
-      await this.contract.getOrdered().then((orders: Order[]) => {
-            orders.forEach((order: any) => {
-                const newOrder: Order = {
-                    api_id: order.api_id,
-                    delivery_day: this.contract.formatHex(order.delivery_day._hex),
-                    worker_address: order.worker_address,
-                    title: order.order_title,
-                    plan_title: order.plan_title,
-                    price: this.contract.formatHex(order.price._hex),
-                    plan_desc: order.plan_desc,
-                    status: order.status,
-                    desc: order.order_desc,
-                    accepted: order.accepted,
-                    payed: order.payed,
-                    customer_accepted: order.customer_accepted,
-                    accepted_at: this.contract.formatHex(order.accepted_at._hex),
-                    ordered_at: this.contract.formatHex(order.ordered_at._hex)
-                }
-
-                this.orders.push(newOrder)
-            })
-        })
     }
 }
 </script>

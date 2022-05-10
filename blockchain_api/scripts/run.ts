@@ -16,17 +16,17 @@ async function main() {
 
   const salesContractFactory = await ethers.getContractFactory("webThreeSales");
   const salesContract = await salesContractFactory.deploy({
-    //value: ethers.utils.parseEther("0.001"),
+    //value: ethers.utils.parseEther("0.01"),
   });
 
   await salesContract.deployed();
 
   console.log("sales address: ", salesContract.address);
 
-  /*const contractBalance = await ethers.provider.getBalance(
+  const contractBalance = await ethers.provider.getBalance(
     salesContract.address
   );
-  console.log("Contract balance:", ethers.utils.formatEther(contractBalance));*/
+  console.log("Contract balance:", ethers.utils.formatEther(contractBalance));
 }
 
 // We recommend this pattern to be able to use async/await everywhere

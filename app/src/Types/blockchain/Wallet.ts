@@ -7,6 +7,7 @@ export default class Wallet {
 
     constructor() {
         const { ethereum } = window as any;
+
         this.provider = new ethers.providers.Web3Provider(ethereum, "any");
 
         if (this.provider) {
@@ -15,8 +16,10 @@ export default class Wallet {
             })
         }
 
-        ethereum.on('accountsChanged', () => {
-            this.connect()
+        ethereum.on('accountsChanged', async () => {
+            this.connect();
+            await store.dispatch('updateOrdered')
+            await store.dispatch('updateOrders')
         })
     }
 
@@ -53,7 +56,6 @@ export default class Wallet {
             console.log(err);
             return false;
         }
-        
     }
 
     async connect(): Promise<Wallet | null> {

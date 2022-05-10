@@ -55,16 +55,16 @@
                 <v-card-text>
                     <v-container>
                         <v-row class="justify-center">
-                        <v-col cols="6" class=" xs-12">
-                                <v-carousel height="250">
-                                    <v-carousel-item
-                                        v-for="(picture, i) in pictures"
-                                        :key="i"
-                                    >
-                                        <img class="caroussel-image" :src="picture" alt="">
-                                    </v-carousel-item>
-                                </v-carousel>
-                        </v-col>
+                            <v-col cols="6" class=" xs-12">
+                                    <v-carousel height="250">
+                                        <v-carousel-item
+                                            v-for="(picture, i) in pictures"
+                                            :key="i"
+                                        >
+                                            <img class="caroussel-image" :src="picture" alt="">
+                                        </v-carousel-item>
+                                    </v-carousel>
+                            </v-col>
                         </v-row>
 
                         <v-row>
@@ -98,7 +98,7 @@
                                         
                                         <v-container>
                                             <v-card-actions class="d-flex justify-space-between">
-                                                <v-btn @click="placeOrder(plan)">
+                                                <v-btn @click="placeOrder(plan)" :disabled="isOwner">
                                                     <v-icon>mdi-cash</v-icon>
                                                     <span>{{plan.price}} MATIC</span>
                                                 </v-btn>
@@ -164,6 +164,10 @@ export default class JobComponent extends Vue {
         if(about && about.length > 130) {
             return about.substring(0, 130) + '...'
         }
+    }
+
+    private get isOwner(): boolean {
+        return this.job?.user_address == this.$store.state.currentAccount;
     }
 
     private async mounted() {

@@ -305,9 +305,6 @@ export default class JobCreate extends Vue {
             .then(async (res: any) => {    
                 await this.$store.state.contract.createJob(
                     res.data._id,
-                    plans_types.includes("Basic"),
-                    plans_types.includes("Premium"),
-                    plans_types.includes("Standard"),
                     basic_price,
                     premium_price,
                     standard_price
