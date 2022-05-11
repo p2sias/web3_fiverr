@@ -19,6 +19,7 @@ export default new Vuex.Store({
     userLoaded: false,
     orders: [] as Order[],
     ordered: [] as Order[],
+    admin: false
   },
   mutations: {
     setAccount(state, account: string) {
@@ -49,6 +50,10 @@ export default new Vuex.Store({
 
     setContract(state, contract: Contract) {
       state.contract = contract;
+    },
+
+    setAdmin(state, admin: boolean) {
+      state.admin = admin;
     }
   },
   actions: {

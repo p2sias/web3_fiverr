@@ -2,6 +2,8 @@
 
 pragma solidity >=0.7.0 <0.9.0;
 
+import "hardhat/console.sol";
+
 struct Order {
         string api_id;
         address worker_address;
@@ -19,24 +21,65 @@ struct Order {
         string ipfs_hash;
         string decline_reason;
 
-        bool customer_accepted;
-        bool accepted;
         uint256 accepted_at;
         uint256 ordered_at;
 }
 
 library Orders {
-    function getOrdersLen(mapping(address => Order[]) storage orders, address worker, address[] memory addresses) internal view returns(uint256) {
+
+    function isStringEquals(string memory first, string memory second) internal pure returns(bool) {
+        return keccak256(abi.encodePacked(first)) == keccak256(abi.encodePacked(second));
+    }
+
+    function getOrders(mapping(address => Order[]) storage orders,  address[] memory addresses, string memory mode) internal view returns(Order[] memory) {
+        bool all = isStringEquals(mode, "all");
+
         uint256 len  = 0;
         for(uint i = 0; i < addresses.length; i++) {
-            for(uint y = 0; y < orders[addresses[i]].length; y++) {
-                if(orders[addresses[i]][y].worker_address == worker) {
-                    len++;
+            if(all) {
+                len += orders[addresses[i]].length;
+            } else {
+                for(uint y = 0; y < orders[addresses[i]].length; y++) {
+                    if(orders[addresses[i]][y].worker_address == msg.sender) {
+                        len++;
+                    }
+                }
+            }
+        }
+        
+        // New array with worker orders
+        Order[] memory worker_orders = new Order[](len);
+
+        uint wo_cpt = 0;
+
+        // add orders to the array
+        for(uint i = 0; i < addresses.length; i++) {
+            Order[] memory client_orders = orders[addresses[i]];
+            for(uint j = 0; j < client_orders.length; j++) {
+                if(!all) {
+                    if(client_orders[j].worker_address == msg.sender) {
+                        worker_orders[wo_cpt] = client_orders[j];
+                        wo_cpt = wo_cpt + 1;
+                    } 
+                } else {
+                    worker_orders[wo_cpt] = client_orders[j];
+                    wo_cpt = wo_cpt + 1;
                 }
             }
         }
 
-        return len;
+        return worker_orders;
+    }
+
+
+    function isInArray(address target, address[] memory array) internal pure returns(bool)
+    {
+        for(uint i; i < array.length; i++) {
+            if(array[i] == target) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 
@@ -44,7 +87,6 @@ contract webThreeSales {
     event Deposited(address indexed payee, uint256 weiAmount);
     event Withdrawn(address indexed payee, uint256 weiAmount);
     event Refunded(address indexed payee, uint256 weiAmmount, string jobId);
-
 
     address private contract_owner;
 
@@ -59,19 +101,9 @@ contract webThreeSales {
     address[] private addresses; 
     address[] private workers;
 
-    constructor() payable {
+    constructor() {
         contract_owner = msg.sender;
         admins[msg.sender] = true;
-    }
-
-    function isInArray(address target, address[] memory array) private pure returns(bool)
-    {
-        for(uint i; i < array.length; i++) {
-            if(array[i] == target) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -85,7 +117,7 @@ contract webThreeSales {
         string memory plan_title,
         string memory plan_desc,
         string memory user_info
-        ) jobOrdered(api_id) payable external {
+        ) notOrdered(api_id) payable external {
         
         require(job_owners[api_id] != address(0), "job.not.exist");
         require(plans_price[api_id][plan_title] != 0, "plan.not.exist");
@@ -102,21 +134,18 @@ contract webThreeSales {
             plan_title,
             plan_desc,
             user_info,
-            "WFA",
+            "wait.for.seller.accept",
             "",
             "",
-            false,
-            false,
             0,
             block.timestamp
             );
         
         orders[msg.sender].push(order);
 
-        if (!isInArray(msg.sender, addresses)) {
+        if (!Orders.isInArray(msg.sender, addresses)) {
             addresses.push(msg.sender);
         }
-
 
         emit Deposited(msg.sender, order.price);
     }
@@ -128,61 +157,42 @@ contract webThreeSales {
         return orders[msg.sender];
     }
 
-    function getAddresses() public view returns (address[] memory) {
-        return addresses;
-    }
-
     /**
         @dev get orders as a worker
      */
     function getOrders() public view returns (Order[] memory) {
-
-        uint256 len = Orders.getOrdersLen(orders, msg.sender, addresses);
-        // New array with worker orders
-        Order[] memory worker_orders = new Order[](len);
-
-        uint wo_cpt = 0;
-
-        // add orders to the array
-        for(uint i = 0; i < addresses.length; i++) {
-            Order[] memory client_orders = orders[addresses[i]];
-            for(uint j = 0; j < client_orders.length; j++) {
-                if(client_orders[j].worker_address == msg.sender) {
-                   worker_orders[wo_cpt] = client_orders[j];
-                   wo_cpt = wo_cpt + 1;
-                }
-            }
-        }
-
-        return worker_orders;
+        return Orders.getOrders(orders, addresses, "worker");
     }
 
     /**
         @dev Check if an user already ordered a job
      */
-    modifier jobOrdered(string memory job_id) {
-        bool exist = false;
+    modifier notOrdered(string memory api_id) {
 
-        for(uint256 i; i < orders[msg.sender].length; i++) {
-            if(isStringEquals(orders[msg.sender][i].api_id, job_id)) {
-                if(!isStringEquals(orders[msg.sender][i].status, "done") && !isStringEquals(orders[msg.sender][i].status, "declined"))
-                {
-                    exist = true;
-                    break;
-                }
-            }
+        for(uint i = 0; i < orders[msg.sender].length; i++) {
+            Order memory order = orders[msg.sender][i];
+
+            if(Orders.isStringEquals(api_id, order.api_id)) {
+                require(!Orders.isStringEquals(order.status, "wait.for.seller.accept")  &&
+                        !Orders.isStringEquals(order.status, "in.progress") &&
+                        !Orders.isStringEquals(order.status, "wait.for.customer.accept"), "already.ordered");
+            } 
         }
-        
-        require(exist == false, "job.already.ordered");
+
         _;
     }
 
-    modifier jobExist(string memory job_id, address customer) {
+    modifier onlyAdmin() {
+        require(admins[msg.sender], "not.authorized");
+        _;
+    }
+
+    modifier jobExist(string memory job_id, address customer, uint256 ordered_at) {
         bool exist = false;
 
         for(uint256 i; i < orders[customer].length; i++) {
 
-            if(isStringEquals(orders[customer][i].api_id, job_id)) {
+            if(Orders.isStringEquals(orders[customer][i].api_id, job_id) && orders[customer][i].ordered_at == ordered_at) {
                 exist = true;
                 break;
             }
@@ -210,80 +220,84 @@ contract webThreeSales {
         plans_price[job_id]["Standard"] = standard_price;
     }
 
-    function finishJob(string memory job_id, address customer, uint256 ordered_at, string memory ipfs_hash) public {
+    function finishJob(string memory job_id, address customer, uint256 ordered_at, string memory ipfs_hash) jobExist(job_id, customer, ordered_at) public {
         uint256 orderIndex = getOrderIndex(job_id, customer, ordered_at);
+        
         require(orders[customer][orderIndex].worker_address == msg.sender, "not.owner");
+        require(Orders.isStringEquals(orders[customer][orderIndex].status, "in.progress"), "order.not.in.progress");
+
         orders[customer][orderIndex].ipfs_hash = ipfs_hash;
-        orders[customer][orderIndex].status = "done";
+        orders[customer][orderIndex].status = "wait.for.customer.accept";
     }
 
-    function approveOrDeclineWork(
-            string memory job_id, 
-            uint256 ordered_at, 
-            string memory action, 
-            bool fromCustomer,
-            string memory decline_reason,
-            address payable customer
-            
-            ) jobExist(job_id, customer) public {
+    function approveOrDeclineWork(string memory job_id, uint256 ordered_at, string memory action, 
+                                  bool fromCustomer, string memory decline_reason, address payable customer) jobExist(job_id, customer, ordered_at) public{
 
-        uint256 orderIndex = getOrderIndex(job_id, msg.sender, ordered_at);
+        uint256 orderIndex = 0;
 
-        
-        
-        bool accept = isStringEquals(action, "accept");
-        bool decline = isStringEquals(action, "decline");
+        bool accept = Orders.isStringEquals(action, "accept");
+        bool decline = Orders.isStringEquals(action, "decline");
 
         require(accept || decline, "bad.action");
 
-        if(fromCustomer) {
-            
+        bool finded = false;
+
+        for(uint i = 0; i < orders[customer].length; i++) {
+            if(fromCustomer && Orders.isStringEquals(orders[customer][i].status, "wait.for.customer.accept")) {
+                orderIndex = i;
+                finded = true;
+                break;
+            }
+            if(!fromCustomer && Orders.isStringEquals(orders[customer][i].status, "wait.for.seller.accept")) {
+                orderIndex = i;
+                finded = true;
+                break;
+            }
+        }
+
+        require(finded, "order.not.awaiting.res");
+        uint256 payment = orders[customer][orderIndex].price;
+    
+        if(fromCustomer)
+        {
             require(orders[msg.sender][orderIndex].ordered_by == msg.sender, "not.customer");
-            require(isStringEquals(orders[msg.sender][orderIndex].status, "done"), "order.not.done");
-            require(orders[msg.sender][orderIndex].customer_accepted == false , "order.approved");
 
-            if(accept){
-                orders[msg.sender][orderIndex].customer_accepted = true;
-                uint256 payment = orders[msg.sender][orderIndex].price;
-                address  worker = orders[msg.sender][orderIndex].worker_address;
-                payable(worker).transfer(payment);
-
-                emit Withdrawn(worker, payment);
-            } else {
+            if(accept) {
+                orders[msg.sender][orderIndex].status = "done";
+                payable(orders[msg.sender][orderIndex].worker_address).transfer(payment);
+            } else  {
                 orders[msg.sender][orderIndex].decline_reason = decline_reason;
                 orders[msg.sender][orderIndex].status = "customer.declined";
             }
+            
         } else {
-            require(!isStringEquals(orders[customer][orderIndex].status, "declined") && !isStringEquals(orders[customer][orderIndex].status, "in.progress"), "already.declined.or.accepted");
-            require(orders[customer][orderIndex].worker_address == msg.sender, "not.owner");
+            require(orders[customer][orderIndex].worker_address == msg.sender, "not.seller");
 
-            if(accept){
+            if(accept) {
                 orders[customer][orderIndex].status = "in.progress";
-                orders[customer][orderIndex].accepted = true;
             } else {
-                customer.transfer(orders[customer][orderIndex].price);
                 orders[customer][orderIndex].decline_reason = decline_reason;
-                orders[customer][orderIndex].status = "declined";
+                orders[customer][orderIndex].status = "seller.declined";
+                customer.transfer(payment);
             }
         }
     }
 
     function addAdmin(address user) public {
-        require(msg.sender == contract_owner, "NCO");
+        require(msg.sender == contract_owner, "not.contract.owner");
         require(admins[user] == false, "already.admin");
         admins[user] = true;
     }
 
     function removeAdmin(address user) public {
         require(user != contract_owner, "address.is.owner");
-        require(msg.sender == contract_owner, "NCO");
-        require(admins[user] == true, "not.admin");
+        require(msg.sender == contract_owner, "not.contract.owner"); 
         admins[user] = false;
     }
 
     function getOrderIndex(string memory job_id, address customer, uint256 ordered_at) private view returns(uint256) {
         for(uint256 i; i < orders[customer].length; i++) {
-            if(isStringEquals(orders[customer][i].api_id, job_id) && orders[customer][i].ordered_at == ordered_at) {
+            if(Orders.isStringEquals(orders[customer][i].api_id, job_id) && orders[customer][i].ordered_at == ordered_at) {
                 return i;
             }
         }
@@ -293,16 +307,16 @@ contract webThreeSales {
         return admins[msg.sender];
     }
 
-    function isStringEquals(string memory first, string memory second) private pure returns(bool) {
-        return keccak256(abi.encodePacked(first)) == keccak256(abi.encodePacked(second));
+    function getAllOrders() onlyAdmin public view returns(Order[] memory){
+        return Orders.getOrders(orders, addresses, "all");
     }
 
-    function refundPart(string memory job_id, address payable customer, uint256 ordered_at, bool refundCustomer) jobExist(job_id, customer) public {
+    
+
+    function refundPart(string memory job_id, address payable customer, uint256 ordered_at, bool refundCustomer) onlyAdmin jobExist(job_id, customer, ordered_at) public {
         uint256 orderIndex = getOrderIndex(job_id, customer, ordered_at);
 
-        require(isAdmin(), "not.authorized");
-        require(orders[customer][orderIndex].customer_accepted == false, "customer.accepted");
-        require(isStringEquals(orders[msg.sender][orderIndex].status, "customer_declined"), "customer.not.declined.order");
+        require(Orders.isStringEquals(orders[customer][orderIndex].status, "customer.declined"), "refund.not.possible");
 
         uint256 payment = orders[customer][orderIndex].price;
 
@@ -316,7 +330,6 @@ contract webThreeSales {
         }
 
         orders[customer][orderIndex].status = "done";
-        orders[customer][orderIndex].customer_accepted = true;
     }
    
 }

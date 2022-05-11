@@ -102,9 +102,9 @@
                                     </v-card-title>
 
                                     <v-card-text>
-                                        <span>User address {{order.ordered_by}}</span>
+                                        <span>User address : {{order.ordered_by}}</span>
                                         <p>
-                                            <span>Details from user</span>
+                                            <span>Details from user : </span>
                                             
                                             <span>{{order.user_infos}}</span>
                                         </p>
@@ -118,7 +118,7 @@
 
                                         <div v-if="isOrderDeclinedByCustomer">
                                             <span v-if="isOrderDone && isOwner">
-                                                This order was accepted by customer !
+                                                This order was accepted by the customer !
                                             </span>
 
                                             <span v-if="isOrderDone && isCustomer">
@@ -126,7 +126,7 @@
                                             </span>
 
                                             <span v-if="isOrderDeclinedByCustomer && isOwner">
-                                                This order was declined by customer, please contact an admin !
+                                                This order was declined by the customer, please contact an admin !
                                             </span>
 
                                             <span v-if="isOrderDeclinedByCustomer && isCustomer">
@@ -269,13 +269,13 @@ export default class OrderComponent extends Vue {
         if (this.order) {
             switch (this.order.status) {
                 case "wait.for.seller.accept":
-                    return {title: "Wait for seller accept", color: "orange"}
+                    return {title: "Waiting for seller approval", color: "orange"}
                 case "wait.for.customer.accept":
                     return {title: "Seller posted result", color: "orange"}
                 case "seller.declined":
                     return {title: "Declined", color: "red"}
                 case "customer.declined":
-                    return {title: "Declined by customer", color: "red"}
+                    return {title: "Declined by the customer", color: "red"}
                 case "in.progress":
                     return {title: "In progress", color: "orange"}
                 case "done":
@@ -361,6 +361,7 @@ export default class OrderComponent extends Vue {
         this.loading = true;
         const auth = "Basic MjhrcmpoU2ZrcXRXTUt6aWRUT3RndE5yTktFOjAxZWUxNjU3YjVmM2RkZmE5NmMyMWMwNDI2MjdhZjM3"
         
+        // Connexion au service IPFS du provider INFURA
         const ipfs_client = create({
             host: "ipfs.infura.io",
             port: 5001,

@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { createUser, findUser, findAndUpdateUser, getUsers, deleteUser } from "../service/user.service";
 import {findAvatar, deleteAvatar, createAvatar } from "../service/avatar.service";
-import { generateToken } from "../service/session.service";
 import log from "../logger";
 import { AvatarDocument } from "../models/avatar.model";
 
@@ -10,10 +9,10 @@ import { AvatarDocument } from "../models/avatar.model";
 
 export async function createUserHandler(req: Request, res: Response) {
   try {
+    // Création de l'utilisateur
     let user = await createUser(req.body);
-    let token = await generateToken(user)
 
-    
+    // Création d'un avatar identicon, généré avec l'adresse de portefeuille unique de l'utilisateur
     const identicon = require('identicon')
     const buffer = identicon.generateSync({ id: user.polygon_address, size: 200 })
 
@@ -25,7 +24,8 @@ export async function createUserHandler(req: Request, res: Response) {
 
     avatar ? log.info(`New avatar created for user(${user._id})`) : log.error(`Error while creating avatar for user(${user._id})`)
     
-    user = await findAndUpdateUser({ _id: user._id }, { jwt_token: token, avatar: avatar._id }, { new: true }) as any;
+    // Update de l'utilisateur avec l'_id de l'avatar
+    user = await findAndUpdateUser({ _id: user._id }, { avatar: avatar._id }, { new: true }) as any;
     
     if (user) {
       return res.send(user.toJSON());

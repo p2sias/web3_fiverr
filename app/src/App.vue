@@ -9,14 +9,17 @@
 
       <v-spacer></v-spacer>
 
-      <v-btn @click="getBalance">
-        Get balance
+      <v-btn 
+        v-if="isAdmin"
+        @click="adminPanel"
+      >
+        Admin
       </v-btn>
 
       <v-btn
         text
       >
-        <span class="mr-2">Accueil</span>
+        <span class="mr-2">Home</span>
         <v-icon>mdi-home-circle-outline</v-icon>
       </v-btn>
 
@@ -47,7 +50,7 @@
         text
         @click="goToProfile"
       >
-        <span class="mr-2">Profil</span>
+        <span class="mr-2">Profile</span>
         <v-icon v-if="!userLoaded">mdi-account-circle-outline</v-icon>
         <img class="avatar" v-else :src="avatar" alt="profile pic">
       </v-btn>
@@ -134,15 +137,25 @@ export default class App extends Vue {
     this.$router.push({path: '/dashboard'})
   }
 
+  private adminPanel() {
+    this.$router.push({path: '/admin'})
+  }
+
   private goToProfile() {
     this.$router.push({path: '/account/jobs'})
     window.location.reload()
   }
 
+  private get isAdmin(): boolean {
+    return this.$store.state.admin;
+  }
+
 
   async created() {
     this.$store.commit('setWallet', new Wallet())
-    this.$store.commit('setContract', new Contract("0xe78ea12533761457EBf9753481B25ADBAD03506a", this.$store.state.wallet))
+    this.$store.commit('setContract', new Contract("0x14b6313c875f4DcF5F40C1256DE636427e1F1076", this.$store.state.wallet))
+
+    await this.$store.state.contract.checkAdmin()
     
     await this.$store.state.wallet.connected()
     .then(async (connected: boolean) => {
@@ -154,7 +167,7 @@ export default class App extends Vue {
         
         if(network != 'matic' && network != "maticmum")
         {
-          this.snackbarText = `You are currently on ${network} network, please switch to polygon mainnet network !`
+          this.snackbarText = `You are currently on ${network} network, please switch to polygon mainnet or testnet network !`
           this.snackbar = true;
         } else this.snackbar = false;
       }

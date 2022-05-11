@@ -294,6 +294,7 @@ export default class JobCreate extends Vue {
                 job.photos.push(Buffer.from(picture.image, "utf-8"))
             }
 
+            // Création du job en base
             await axios.post(`http://localhost:9696/api/jobs`, job, {
                 headers: {
                     "Content-Type": "application/json"
@@ -302,7 +303,8 @@ export default class JobCreate extends Vue {
                 maxBodyLength: 100000000
 
             })
-            .then(async (res: any) => {    
+            .then(async (res: any) => {
+                // Création du job sur le Smart Contract    
                 await this.$store.state.contract.createJob(
                     res.data._id,
                     basic_price,

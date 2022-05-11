@@ -23,7 +23,7 @@
             <v-card-text class="d-flex flex-column align-start">
                 <div class="address-container">{{author.pseudo ? author.pseudo : shortAddress(author.polygon_address)}}</div>
                 <div class="my-4 text-subtitle-1">
-                    À partir de {{getLowestPrice(job)}} MATIC
+                    Starting from {{getLowestPrice(job)}} MATIC
                 </div>
                 <div>{{shortAbout(job.about)}}</div>
             </v-card-text>
@@ -102,7 +102,7 @@
                                                     <v-icon>mdi-cash</v-icon>
                                                     <span>{{plan.price}} MATIC</span>
                                                 </v-btn>
-                                                <span>Livraison dans {{plan.max_delivery_day}} jours</span>
+                                                <span>Delivery in {{plan.max_delivery_day}} day(s)</span>
                                             </v-card-actions>
                                         </v-container>
                                     </v-card>

@@ -7,7 +7,6 @@ export interface UserDocument extends Document {
     mail: string,
     jobs: Array<Schema.Types.ObjectId>,
     avatar: Schema.Types.ObjectId | null,
-    jwt_token: string | null,
     bio: string | null
 }
 
@@ -17,7 +16,6 @@ const userSchema = new Schema<UserDocument>({
     pseudo: { type: String },
     jobs: [{ type: Schema.Types.ObjectId, ref: 'Job' }],
     avatar: {type: Schema.Types.ObjectId, ref: 'Avatar'},
-    jwt_token: { type: String },
     bio: {type: String}
 },
     {

@@ -29,6 +29,13 @@ export default class Contract {
         return parseInt(_hex, 16);
     }
 
+    async checkAdmin(): Promise<void> {
+        if(this.webFiverContract) {
+            const isAdmin: boolean = await this.webFiverContract.isAdmin();
+            store.commit("setAdmin", isAdmin);
+        } 
+    } 
+
     async getBalance(): Promise<any> {
         if(this.webFiverContract) {
             await this.provider.getBalance(this.webFiverContract.address)

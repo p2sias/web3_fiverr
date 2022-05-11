@@ -19,7 +19,7 @@
 
                   <v-card-text class="d-flex flex-column">
                     <span>Selected plan : {{plan.type}}</span>
-                    <span>Deliver in {{plan.max_delivery_day}} day(s)</span>
+                    <span>Delivery in {{plan.max_delivery_day}} day(s)</span>
                     <span>From : {{job.user_address}}</span>
                     <span class="align-self-end">Total price (without gas) : {{plan.price}} MATIC</span>
                   </v-card-text>
@@ -86,7 +86,7 @@ export default class PaymentComponent extends Vue {
     private actions = [
       {action: "Please accept the terms of services by signing in your browser", status: "waiting"},
       {action: "Placing order", status: "waiting"},
-      {action: "Order done ! Waiting for worker accept", status: "waiting"}
+      {action: "Order done ! Waiting for worker approval", status: "waiting"}
     ]
 
     private getIconAction(status: string): any {
@@ -138,7 +138,7 @@ export default class PaymentComponent extends Vue {
             if(res && this.job) {
 
               this.actions[1].status = "done";
-              this.actions[3].status = "done";
+              this.actions[2].status = "done";
 
               
             } else {

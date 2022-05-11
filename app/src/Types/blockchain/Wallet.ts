@@ -1,6 +1,7 @@
 import { Web3Provider} from "@ethersproject/providers";
 import { ethers } from "ethers";
 import store from "../../store"
+import router from "../../router"
 
 export default class Wallet {
     provider: Web3Provider | null = null;
@@ -16,8 +17,15 @@ export default class Wallet {
             })
         }
 
+        // lorsque l'utilisateur change de portefeuille
         ethereum.on('accountsChanged', async () => {
+            // On update l'utilisateur en base
             this.connect();
+            if(store.state.contract) {
+                store.state.contract.checkAdmin();
+            }
+
+            router.push({path: '/account/jobs'})
             await store.dispatch('updateOrdered')
             await store.dispatch('updateOrders')
         })
@@ -59,10 +67,13 @@ export default class Wallet {
     }
 
     async connect(): Promise<Wallet | null> {
+        // On récupère le client Metamask
         const _ethereum = this.getEthClient();
         try {
             if (_ethereum) {
+                // Envoie une requête de connexion du portefeuille
                 const accounts = await _ethereum.request({ method: "eth_requestAccounts" });
+                // Trigger de la méthode setAccount du store
                 await store.dispatch('setAccount', accounts[0]);
                 return this;
             } 

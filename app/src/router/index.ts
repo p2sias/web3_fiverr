@@ -7,6 +7,8 @@ import ProfileSettings from '../views/Tabs/Settings/ProfileSettings.vue'
 import Jobs from '../views/Tabs/Profile/Jobs.vue'
 import Orders from '../views/Tabs/Profile/Orders.vue'
 import Dashboard from '../views/Dashboard.vue'
+import AdminPanel from "../views/AdminPanel.vue"
+import store from '../store'
 
 Vue.use(VueRouter)
 
@@ -21,6 +23,12 @@ const routes: Array<RouteConfig> = [
     path: '/dashboard',
     name: 'Dashboard',
     component: Dashboard
+  },
+
+  { 
+    path: '/admin',
+    name: 'AdminPanel',
+    component: AdminPanel
   },
 
   {
